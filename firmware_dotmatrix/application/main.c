@@ -103,7 +103,7 @@ void main(void)
     HEARTBEAT_OFF();
     SystemSleep();
     HEARTBEAT_ON();
-    
+    /*practice*/
   } /* end while(1) main super loop */
   
 } /* end main() */
