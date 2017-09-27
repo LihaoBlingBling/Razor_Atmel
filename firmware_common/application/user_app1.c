@@ -136,54 +136,50 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-  static u32    u32Counter=0;
-  static u32    u32Limit=500;
-  static u32    u32Range=0;
   static u8     u8Light;
- 
-  static bool bLightIsOn = FALSE;
+  static u8     u8Range=0;
+  static u8     u8Sign=0;
+  static u32    u32Counter=0;
   
-  u32Counter++; /*increase 1 per ms*/
-  u32Range++;
-  if(u32Limit>=500)
+  u8Range++;
+  u32Counter++;
+  if(u8Sign>=10)
   {
     u8Light=1;
   }
-  else if(u32Limit<=10)
+  else if(u8Sign == 0)
   {
     u8Light=0;
   }
-  if(u32Counter == u32Limit)
+  if(u8Range == 100)
   {
-    u32Counter=0;
-    if(bLightIsOn)
-    {
-      HEARTBEAT_OFF();
-      bLightIsOn = FALSE;
-    }
+    u8Range=0;
+    if(u8Light == 1)
+      u8Sign--;
     else
     {
-      HEARTBEAT_ON();
-      bLightIsOn = TRUE;
-      
-    }
-    if(u32Range >= COUNTER_LIMIT_MS)
-      {
-        u32Range=0;
-        if(u8Light == 1)
-        {
-          u32Limit=u32Limit/2;
-        }
-        else
-        {
-          u32Limit=u32Limit*2;
-        }
-       
-      }
-    
-    
+      u8Sign++;
+    } 
   }
- 
+  if(u32Counter<=10)
+  {
+    if(u32Counter >0 && u32Counter<=u8Sign)
+    {
+      HEARTBEAT_ON();
+    }
+    else if(u32Counter>u8Sign)
+    {
+      HEARTBEAT_OFF();
+    }
+   }
+  else 
+  {
+   u32Counter=0; 
+  }
+    
+
+
+  
 }/* end UserApp1SM_Idle() */
     
 
