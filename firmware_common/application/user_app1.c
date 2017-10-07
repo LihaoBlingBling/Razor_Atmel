@@ -87,6 +87,17 @@ Promises:
 */
 void UserApp1Initialize(void)
 {
+  LedPWM(LCD_RED, LED_PWM_0);
+  LedPWM(LCD_GREEN, LED_PWM_0);
+  LedPWM(LCD_BLUE, LED_PWM_0);
+  LedPWM(WHITE, LED_PWM_100);
+  LedOff(PURPLE);
+  LedOff(BLUE);
+  LedOff(CYAN);
+  LedOff(GREEN);
+  LedOff(YELLOW);
+  LedOff(ORANGE);
+  LedOff(RED);
  
   /* If good initialization, set state to Idle */
   if( 1 )
@@ -136,6 +147,36 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
+  static u16 u16Counter = 0;
+  
+  u16Counter++;
+  if(u16Counter<=2000)
+  {
+    switch(u16Counter)
+    {
+    case 400: LedOff(WHITE);  LedPWM(PURPLE, LED_PWM_70); break;
+    case 850: LedOff(PURPLE); LedPWM(BLUE, LED_PWM_50);   break;
+    case 1200: LedOff(BLUE);   LedPWM(CYAN, LED_PWM_30);   break;
+    case 1450: LedOff(CYAN);   LedPWM(GREEN, LED_PWM_20);  break;
+    case 1650: LedOff(GREEN);  LedPWM(YELLOW, LED_PWM_15); break;
+    case 1800: LedOff(YELLOW); LedPWM(ORANGE, LED_PWM_10); break;
+    case 1900: LedOff(ORANGE); LedPWM(READ, LED_PWM_100);break;
+    default: break;
+    }
+  }
+  else
+  {
+   u16Counter=0;
+  LedPWM(WHITE, LED_PWM_100);
+  LedOff(PURPLE);
+  LedOff(BLUE);
+  LedOff(CYAN);
+  LedOff(GREEN);
+  LedOff(YELLOW);
+  LedOff(ORANGE);
+  LedOff(RED);
+ 
+  }
 
 } /* end UserApp1SM_Idle() */
     
