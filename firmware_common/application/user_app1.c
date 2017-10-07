@@ -148,34 +148,109 @@ State Machine Function Definitions
 static void UserApp1SM_Idle(void)
 {
   static u16 u16Counter = 0;
+  static u8  u8Counter = 0;
   
   u16Counter++;
   if(u16Counter<=2000)
   {
     switch(u16Counter)
     {
-    case 400: LedOff(WHITE);  LedPWM(PURPLE, LED_PWM_70); break;
-    case 850: LedOff(PURPLE); LedPWM(BLUE, LED_PWM_50);   break;
-    case 1200: LedOff(BLUE);   LedPWM(CYAN, LED_PWM_30);   break;
-    case 1450: LedOff(CYAN);   LedPWM(GREEN, LED_PWM_20);  break;
-    case 1650: LedOff(GREEN);  LedPWM(YELLOW, LED_PWM_15); break;
-    case 1800: LedOff(YELLOW); LedPWM(ORANGE, LED_PWM_10); break;
-    case 1900: LedOff(ORANGE); LedPWM(READ, LED_PWM_100);break;
-    default: break;
+    case 400: 
+      LedOff(WHITE);  
+      LedPWM(PURPLE, LED_PWM_70);
+      break;
+    case 850: 
+      LedOff(PURPLE); 
+      LedPWM(BLUE, LED_PWM_50);  
+      break;
+    case 1200: 
+      LedOff(BLUE);   
+      LedPWM(CYAN, LED_PWM_30);   
+      break;
+    case 1450: 
+      LedOff(CYAN);   
+      LedPWM(GREEN, LED_PWM_20);  
+      break;
+    case 1650: 
+      LedOff(GREEN);  
+      LedPWM(YELLOW, LED_PWM_15);
+      break;
+    case 1800: 
+      LedOff(YELLOW); 
+      LedPWM(ORANGE, LED_PWM_10); 
+      break;
+    case 1900: 
+      LedOff(ORANGE); 
+      LedPWM(RED, LED_PWM_5);
+      u8Counter++;
+      break;
+    default: 
+      break;
     }
   }
   else
   {
    u16Counter=0;
-  LedPWM(WHITE, LED_PWM_100);
-  LedOff(PURPLE);
-  LedOff(BLUE);
-  LedOff(CYAN);
-  LedOff(GREEN);
-  LedOff(YELLOW);
-  LedOff(ORANGE);
-  LedOff(RED);
- 
+   LedPWM(WHITE, LED_PWM_100);
+   LedOff(PURPLE);
+   LedOff(BLUE);
+   LedOff(CYAN);
+   LedOff(GREEN);
+   LedOff(YELLOW);
+   LedOff(ORANGE);
+   LedOff(RED); /*Initialize*/
+  }
+  if(u8Counter <= 7)
+  {
+    switch(u8Counter)
+    {
+    case 0:
+      LedOff(LCD_RED);
+      LedOff(LCD_GREEN);
+      LedOff(LCD_BLUE);
+      break;
+    case 1: /*RED*/
+      LedOn(LCD_RED);
+      LedOff(LCD_GREEN);
+      LedOff(LCD_BLUE);
+      break;
+    case 2: /*YELLOW*/
+      LedOn(LCD_RED);
+      LedOn(LCD_GREEN);
+      LedOff(LCD_BLUE);
+      break; 
+    case 3: /*GREEN*/
+      LedOff(LCD_RED);
+      LedOn(LCD_GREEN);
+      LedOff(LCD_BLUE);
+      break; 
+    case 4: /*CYAN*/
+      LedOff(LCD_RED);
+      LedOn(LCD_GREEN);
+      LedOn(LCD_BLUE);
+      break; 
+    case 5: /*BLUE*/
+      LedOff(LCD_RED);
+      LedOff(LCD_GREEN);
+      LedOn(LCD_BLUE);
+      break; 
+    case 6: /*PURPLE*/
+      LedOn(LCD_RED);
+      LedOff(LCD_GREEN);
+      LedOn(LCD_BLUE);
+      break;
+    case 7: /*WHITE*/
+      LedOn(LCD_RED);
+      LedOn(LCD_GREEN);
+      LedOn(LCD_BLUE);
+      break; 
+    default:
+      break;
+    }
+  }
+  else
+  {
+    u8Counter=0;
   }
 
 } /* end UserApp1SM_Idle() */
