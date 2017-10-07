@@ -198,7 +198,7 @@ static void UserApp1SM_Idle(void)
       }
     }
   }
-  if(u16Count == 1200)
+  if(u16Count == 7200)
   {
     u16Count = 0;
     u8Counter++;
@@ -238,7 +238,7 @@ static void UserApp1SM_Idle(void)
     {
       LedOff(GREEN);
     }
-  if(u8Counter == 6)
+  if(u8Counter == 16)
   {
     u8Counter=0;
   }
