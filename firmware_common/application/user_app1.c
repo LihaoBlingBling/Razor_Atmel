@@ -87,9 +87,9 @@ Promises:
 */
 void UserApp1Initialize(void)
 {
-  LedOn(LCD_RED);
-  LedOn(LCD_GREEN);
-  LedOn(LCD_BLUE);
+  LedOff(LCD_RED);
+  LedOff(LCD_GREEN);
+  LedOff(LCD_BLUE);
   LedPWM(WHITE, LED_PWM_100);
   LedOff(PURPLE);
   LedOff(BLUE);
@@ -97,7 +97,7 @@ void UserApp1Initialize(void)
   LedOff(GREEN);
   LedOff(YELLOW);
   LedOff(ORANGE);
-  LedOff(RED);
+  LedOff(RED); 
 
  
   /* If good initialization, set state to Idle */
@@ -151,43 +151,44 @@ static void UserApp1SM_Idle(void)
   static u16 u16Counter = 0;
   static u8 u8Counter = 0;
   u16Counter++;
-  if(u16Counter>=550 && u16Counter<=950)
+  if(u16Counter == 550)
   {
     LedOff(WHITE);  
-    LedPWM(PURPLE, LED_PWM_70);
-  }
-  else if(u16Counter>950 && u16Counter<=1250)
+    LedPWM(PURPLE, LED_PWM_70); 
+   }
+
+  else if(u16Counter == 950)
   {
     LedOff(PURPLE); 
     LedPWM(BLUE, LED_PWM_50);   
   }
-  else if(u16Counter>1250 && u16Counter<=1500)
+  else if(u16Counter == 1250)
   {
     LedOff(BLUE);   
     LedPWM(CYAN, LED_PWM_30); 
   }
-  else if(u16Counter>1500 && u16Counter<=1700)
+  else if(u16Counter == 1500)
   {
     LedOff(CYAN);   
     LedPWM(GREEN, LED_PWM_20); 
   }
-  else if(u16Counter>1700 && u16Counter<=1850)
+  else if(u16Counter == 1700)
   {
     LedOff(GREEN);  
     LedPWM(YELLOW, LED_PWM_15); 
   }
-  else if(u16Counter>1850 && u16Counter<=1950)
+  else if(u16Counter == 1850)
   {
     LedOff(YELLOW); 
     LedPWM(ORANGE, LED_PWM_10);
   }
-  else if(u16Counter>1950 && u16Counter<=2000)
+  else if(u16Counter == 1950)
   {
     LedOff(ORANGE); 
     LedPWM(RED, LED_PWM_5);
     u8Counter++;
   }
-  else if(u16Counter>2000)
+  else if(u16Counter == 2000)
   {
     u16Counter=0;
     LedOn(WHITE);
@@ -198,7 +199,39 @@ static void UserApp1SM_Idle(void)
     LedOff(YELLOW);
     LedOff(ORANGE);
     LedOff(RED);
+  }
+  if(u8Counter<=7)
+  {
+    if(u8Counter & 0x01)
+    {
+      LedOn(LCD_RED);
+    }
+    else
+    {
+      LedOff(LCD_RED);
+    }
 
+    if(u8Counter & 0x02)
+    {
+      LedOn(LCD_GREEN);
+    }
+    else
+    {
+      LedOff(LCD_GREEN);
+    }
+
+    if(u8Counter & 0x04)
+    {
+      LedOn(LCD_BLUE);
+    }
+    else
+    {
+      LedOff(LCD_BLUE);
+    }
+  }
+  else
+  {
+    u8Counter=0;
   }
 } /* end UserApp1SM_Idle() */
     
