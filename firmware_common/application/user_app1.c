@@ -87,7 +87,15 @@ Promises:
 */
 void UserApp1Initialize(void)
 {
- 
+  LedOff(WHITE);
+  LedOff(PURPLE);
+  LedOff(BLUE);
+  LedOff(CYAN);
+  LedOff(GREEN);
+  LedOff(YELLOW);
+  LedOff(ORANGE);
+  LedOff(RED);
+
   /* If good initialization, set state to Idle */
   if( 1 )
   {
@@ -136,7 +144,71 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-
+  static u8 u8Sign=0;
+  static u32 u32aPassword[]={1,2,3,2};
+  static u8 u8Length=4;
+  static u8 u8Number;
+  static u8 u8Counter=0;
+  static u8 u8Sign1=0;
+  
+  if( WasButtonPressed(BUTTON0) )
+  {
+    ButtonAcknowledge(BUTTON0);
+    u8Number=1;
+    if(u8Number!=u32aPassword[u8Counter])
+    {
+      u8Sign=1;
+    }
+    u8Counter++;
+  }
+  
+  if( WasButtonPressed(BUTTON1) )
+  {
+    ButtonAcknowledge(BUTTON1);
+    u8Number=2;
+    if(u8Number!=u32aPassword[u8Counter])
+    {
+      u8Sign=1;
+    }
+    u8Counter++;
+  }
+  
+  if( WasButtonPressed(BUTTON2) )
+  {
+    ButtonAcknowledge(BUTTON2);
+    u8Number=3;
+    if(u8Number!=u32aPassword[u8Counter])
+    {
+      u8Sign=1;
+    }
+    u8Counter++;
+  }
+  
+  if( WasButtonPressed(BUTTON3)  )
+  {
+    ButtonAcknowledge(BUTTON3);
+    if(u8Sign1==0)
+    {
+      u8Sign1=1;
+      if(u8Sign==0 && u8Counter==u8Length)
+      {
+        LedOn(GREEN);
+      }
+      else
+      {
+        LedOn(RED);
+      }
+    }
+    else
+    {
+      u8Sign=0;
+      u8Sign1=0;
+      u8Counter=0;
+      LedOff(RED);
+      LedOff(GREEN);
+    }
+  } 
+  
 } /* end UserApp1SM_Idle() */
     
 
