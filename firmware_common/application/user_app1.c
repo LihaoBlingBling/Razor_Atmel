@@ -94,7 +94,7 @@ void UserApp1Initialize(void)
   LedOff(GREEN);
   LedOff(YELLOW);
   LedOff(ORANGE);
-  LedOff(RED);
+  LedOn(RED);
  
   /* If good initialization, set state to Idle */
   if( 1 )
@@ -160,7 +160,7 @@ static void UserApp1SM_Idle(void)
       u8Number=1; /*The value of Button0*/
       if(u8Number==u32aPassword[u8Counter])
       {
-        u8Password++; 
+        u8Password++; /*If BUTTON is right, u8Password++ */
       }
       u8Counter++;
     }
@@ -189,24 +189,25 @@ static void UserApp1SM_Idle(void)
     if( WasButtonPressed(BUTTON3) )
     {
       ButtonAcknowledge(BUTTON3);
+      LedOff(RED);
       if(u8Sign==0)
       {
         u8Sign=1;
         if(u8Password==u8Length && u8Counter<=u8Length)
         {
-          LedOn(GREEN);
+          LedBlink(GREEN, LED_1HZ);
           u8Counter=0;
         }
         else
         {
-          LedOn(RED);
+          LedBlink(RED, LED_1HZ);
           u8Counter=0;
         }
       }
-      else if(u8Sign==1) /*Re-enter password*/
+      else if(u8Sign == 1) /*Re-enter password*/
       {
         u8Sign=0;
-        LedOff(RED);
+        LedOn(RED);   /*Locked*/
         LedOff(GREEN);
         u8Password=0;   
       }
@@ -248,7 +249,7 @@ static void UserApp1SM_Idle(void)
     {
       ButtonAcknowledge(BUTTON3);
       LedOff(GREEN);
-      LedOff(RED);
+      LedOn(RED);
       u8Sign1=0;
       u8Counter=0;
     }
