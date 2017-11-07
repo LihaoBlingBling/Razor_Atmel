@@ -19,6 +19,8 @@ Header file for user_app1.c
 
 #ifndef __USER_APP1_H
 #define __USER_APP1_H
+/* Size of buffer for scanf messages */
+#define U16_USER_INPUT_BUFFER_SIZE  (u16)(DEBUG_SCANF_BUFFER_SIZE + 1)    
 
 /**********************************************************************************************************************
 Type Definitions
