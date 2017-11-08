@@ -91,6 +91,8 @@ u8 G_u8DebugScanfCharCount = 0;                    /* Counter for # of character
 extern volatile u32 G_u32SystemFlags;                    /* From main.c */
 extern volatile u32 G_u32ApplicationFlags;               /* From main.c */
 
+extern u8 G_au8DebugScanfBuffer[];  /* From debug.c */
+extern u8 G_u8DebugScanfCharCount;  /* From debug.c */
 extern volatile u32 G_u32SystemTime1ms;                  /* From board-specific source file */
 extern volatile u32 G_u32SystemTime1s;                   /* From board-specific source file */
 

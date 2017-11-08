@@ -52,6 +52,8 @@ extern volatile u32 G_u32ApplicationFlags;             /* From main.c */
 extern volatile u32 G_u32SystemTime1ms;                /* From board-specific source file */
 extern volatile u32 G_u32SystemTime1s;                 /* From board-specific source file */
 
+extern u8 G_au8DebugScanfBuffer[];  /* From debug.c */
+extern u8 G_u8DebugScanfCharCount;  /* From debug.c */
 
 /***********************************************************************************************************************
 Global variable definitions with scope limited to this local application.
@@ -136,6 +138,72 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
+  static u8     u8CharCount = 0;
+  static u8     u8Sign = 0;
+  static u32    u32Counter = 0;
+  static u8     u8Number = 0;
+  static u8     u8Count = 0;
+  static bool   bTime = FALSE;
+  static u8     au8NameNumber[]="\n\rThe number of your name in buffer:";
+  
+  if(u8CharCount<=G_u8DebugScanfCharCount-1  )
+  {
+    if(G_au8DebugScanfBuffer[u8CharCount] == 'L')
+    {
+      u8Count = 0;
+      u8Sign = 1; /*the sign of the first char 'L' appearing*/
+      u32Counter = 0; 
+    }
+    if(G_au8DebugScanfBuffer[u8CharCount] == 'i' && u8Sign == 1)
+    {
+      u8Count ++;
+      u32Counter = 0;/*when G_au8DebugScanfBuffer is changed, clear Counter*/
+    }
+    
+    if(G_au8DebugScanfBuffer[u8CharCount] == 'h' && u8Sign == 1)
+    {
+      u8Count ++;  
+      u32Counter = 0;
+    }
+    
+    if(G_au8DebugScanfBuffer[u8CharCount] == 'a' && u8Sign == 1)
+    {
+      u8Sign = 4;
+      u8Count ++; /*the number of char before the last char'o'*/
+      u32Counter = 0;
+    }
+    
+    if(G_au8DebugScanfBuffer[u8CharCount] == 'o' && u8Sign == 4 && u8Count==3)
+    {
+      u8Count=0;
+      u32Counter = 0;
+      u8Number++; /*The number of your name*/
+      bTime = TRUE; /*The number of your name has been changed*/
+    }
+    if(u8Count>=4) 
+    {
+      u8Count=0;
+    }
+    
+    u8CharCount++;
+  }
+  
+  if(bTime == TRUE) /* Start Counting*/
+  {
+    u32Counter++;
+  }
+  
+  if(u32Counter == 3000)/*G_au8DebugScanfBuffer has not been changed in 3s*/
+  {
+    u32Counter = 0;
+    u8CharCount = 0;
+    bTime = FALSE;
+    u8Count = DebugScanf(G_au8DebugScanfBuffer);  /*Clear G_au8DebugScanfBuffer*/
+    DebugPrintf(au8NameNumber);
+    DebugPrintNumber(u8Number);
+    DebugLineFeed();
+  }
+  
 
 } /* end UserApp1SM_Idle() */
     
