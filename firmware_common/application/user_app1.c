@@ -60,7 +60,7 @@ Variable names shall start with "UserApp1_" and be declared as static.
 ***********************************************************************************************************************/
 static fnCode_type UserApp1_StateMachine;            /* The state machine function pointer */
 //static u32 UserApp1_u32Timeout;                      /* Timeout counter used across states */
-static u8 UserApp_au8UserInputBuffer[U16_USER_INPUT_BUFFER_SIZE  ]; 
+//static u8 UserApp_au8UserInputBuffer[U16_USER_INPUT_BUFFER_SIZE  ]; 
 
 /**********************************************************************************************************************
 Function Definitions
@@ -91,7 +91,7 @@ void UserApp1Initialize(void)
   /*for(u16 i = 0; i < G_au8DebugScanfBuffer  ; i++)
   {
     G_au8DebugScanfBuffer[i] = 0;
-  }
+  }*/
 
   /* If good initialization, set state to Idle */
   if( 1 )
@@ -141,17 +141,15 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-  static u8  u8aName[] = "Lihao";
+  static u8  u8aName[] = "Xiamengke";
   static u8  u8NameCount = 0;
   static u8  u8CharCount = 0;
   static u8  u8Number = 0;
   static u8  u8Sign = 0;
   static u8  u8Count = 0;
   static u32  u32Time = 0;
-  static u8  u8Sign1 = 0;
   static u8  u8NumNameMessage[] = "\n\rYour name in buffer: ";
   
-  /*u32Time++;*/
   if(u8CharCount<=G_u8DebugScanfCharCount-1 )
   {
     if(u8NameCount == 5)
@@ -159,55 +157,38 @@ static void UserApp1SM_Idle(void)
       u8Number++;
       u8Sign=1;
       u8NameCount=0;
-      /*u8CharCount++;*/
-      u8Sign1=3;
     }
     if(G_au8DebugScanfBuffer[u8CharCount] == u8aName[u8NameCount])
     {
       u8NameCount++;
-      /*u8CharCount++;*/
       u32Time=0;
-      u8Sign1=1;
     }
     else
     {
-      /*u8CharCount++;*/
       u8NameCount=0;
       u32Time=0;
-      u8Sign1=2;
     }
     
    u8CharCount++; 
   }
+  
   if(u8Sign==1)
   {
     u32Time++;
   }
 
- 
-  
-    
-
-  if(/*u8Sign==1 && */u32Time==3000)
+  if(u32Time==3000)
   {
     u32Time=0;
     u8Sign=0;
     u8NameCount=0;
     u8CharCount=0;
     u8Count = DebugScanf(G_au8DebugScanfBuffer);
-    DebugLineFeed();
     DebugPrintf(u8NumNameMessage);
     DebugPrintNumber(u8Number);
     DebugLineFeed();
   }
-  
-  
 
-    
-    
-    
-  
-    
 
 } /* end UserApp1SM_Idle() */
     
