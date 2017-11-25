@@ -165,7 +165,7 @@ static void UserApp1SM_Idle(void)
   static bool bSign = FALSE;
   static u8 u8Sign = 0;
   static u32 u32Count = 0;
-  static u8 u8List = 0;
+  static u8 u8List = 0;  // The Number of Command
   static u8 u8Count = 0;
   static bool bInput = TRUE;
   static bool bAgain = FALSE;
@@ -192,6 +192,8 @@ static void UserApp1SM_Idle(void)
       u8Menu=3;
     }
   }
+  //Judge mode
+  
   if(u8Menu==1)
   {
     if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] == 0x0D && bInput==TRUE )
@@ -207,6 +209,8 @@ static void UserApp1SM_Idle(void)
           }
           u8Number++;
         }
+        //Judge LedNames
+        
         if(bSign==FALSE && u8Number>=8)
         {
           u8Error=1;
@@ -227,6 +231,7 @@ static void UserApp1SM_Idle(void)
               u8Error=2;
             }
           }
+          //Judge the first '-'
           
           if(u8Sign == 1)
           {
@@ -245,6 +250,7 @@ static void UserApp1SM_Idle(void)
                 {
                   u8Error=3;
                 }
+                //Calculation Start Time and Judge the second '-'
               }
             }
           }
@@ -256,6 +262,8 @@ static void UserApp1SM_Idle(void)
               u32Count++;
               u8Number2++;
             }
+            //Calculation the number of End Time
+            
             else
             {
               bInput=FALSE;
@@ -271,6 +279,8 @@ static void UserApp1SM_Idle(void)
                   u8Error=5;
                 }
               }
+              //Calculation End Time
+              
               DebugLineFeed();
               if(u8Error == 0 && u32Time2<=u32Time1)
               {
@@ -302,7 +312,6 @@ static void UserApp1SM_Idle(void)
       }
       if(bAgain)
       {
-        
         bSign=FALSE;
         u8Number = 0;
         u8Number1 = 0;
@@ -313,6 +322,8 @@ static void UserApp1SM_Idle(void)
         u32Time1=0;
         u32Time2=0;
       }
+      //Initialization
+      
       if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] != 0x0D)
       {
         u32Count++;
@@ -323,7 +334,9 @@ static void UserApp1SM_Idle(void)
         u8Menu=0;
         u8Count=DebugScanf(G_au8DebugScanfBuffer);
       }
+      //Judge pressing enter on a blank line
     }
+    
     if(u8Error!=0)
     {
       bSign=FALSE;
@@ -360,7 +373,7 @@ static void UserApp1SM_Idle(void)
         DebugPrintf(au8Error6);
         break;
       }
-      
+      //The type of Error
     }
   }
   if(u8Menu==2)
@@ -382,8 +395,8 @@ static void UserApp1SM_Idle(void)
     u32Time1=0;
     u32Time2=0;
     u32Count=0;
-    
   }
+  
   if(u8Menu==3)
   {
     u8Menu=0;
@@ -400,7 +413,7 @@ static void UserApp1SM_Idle(void)
     u32Time1=0;
     u32Time2=0;
     u32Count=0;
-  }
+  }//The false mode
   
   
 } /* end UserApp1SM_Idle() */
