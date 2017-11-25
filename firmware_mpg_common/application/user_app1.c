@@ -56,6 +56,7 @@ static u8 au8UserMenu1[]="************************************\n\rPress 1 to pro
 static u8 au8UserMessage1[]="\n\rEnter commands as LED-ONTIME-OFFTIME and press Enter\n\rTime is in milliseconds, max 100 commands";
 static u8 au8UserMessage2[]="\n\rLED colors: R(r),O(o),Y(y),G(g),C(c),B(b),P(p),W(w)\n\rExample: R-100-200 (RED on at 100ms and off at 200ms)\n\rPress Enter on blank line to end\n\r";
 static u8 au8UserMessage3[]="\n\rLED   ON TIME   OFF TIME\n\r-----------------------------------\n\r";
+static u8 au8MenuError[]="\n\rThe Command is wrong\n\r";
 static u8 au8Error1[]="\n\rThe Ledname is wrong\n\r";
 static u8 au8Error2[]="\n\rThe character after Ledname is wrong\n\r";
 static u8 au8Error3[]="\n\rStart time cannot include character which is not Number\n\r";
@@ -185,6 +186,10 @@ static void UserApp1SM_Idle(void)
       u8Menu=DebugScanf(G_au8DebugScanfBuffer)+1;
       DebugPrintf(au8UserMessage3);
       DebugLineFeed();
+    }
+    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] != 0x32 && G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]!=0x31  &&G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]!=0x00)
+    {
+      u8Menu=3;
     }
   }
   if(u8Menu==1)
@@ -378,6 +383,23 @@ static void UserApp1SM_Idle(void)
     u32Time2=0;
     u32Count=0;
     
+  }
+  if(u8Menu==3)
+  {
+    u8Menu=0;
+    DebugPrintf(au8MenuError);
+    DebugPrintf(au8UserMenu1);
+    u8Count=DebugScanf(G_au8DebugScanfBuffer);
+    bSign=FALSE;
+    u8Number = 0;
+    u8Number1 = 0;
+    u8Number2 = 0;
+    u8Address1 = 1;
+    u8Address2 = 1;
+    u8Sign = 0;
+    u32Time1=0;
+    u32Time2=0;
+    u32Count=0;
   }
   
   
