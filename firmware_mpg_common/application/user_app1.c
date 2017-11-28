@@ -52,7 +52,8 @@ Variable names shall start with "UserApp1_" and be declared as static.
 ***********************************************************************************************************************/
 static fnCode_type UserApp1_StateMachine;            /* The state machine function pointer */
 //static u32 UserApp1_u32Timeout;                      /* Timeout counter used across states */
-static u8 au8UserMenu1[]="************************************\n\rPress 1 to program LED command sequence\n\rPress 2 to show current USER program\n\r************************************\n\r";
+static u8 au8UserMenu1[]="\n\r************************************\n\rPress 1 to program LED command sequence\n\rPress 2 to show current USER program\n\r************************************\n\r";
+static u8 au8UserMenu2[]="*******************\n\rPress 0: Countinue\n\rPress 9: Reenter\n\r*******************\n\r";
 static u8 au8UserMessage1[]="\n\rEnter commands as LED-ONTIME-OFFTIME and press Enter\n\rTime is in milliseconds, max 100 commands";
 static u8 au8UserMessage2[]="\n\rLED colors: R(r),O(o),Y(y),G(g),C(c),B(b),P(p),W(w)\n\rExample: R-100-200 (RED on at 100ms and off at 200ms)\n\rPress Enter on blank line to end\n\r";
 static u8 au8UserMessage3[]="\n\rLED   ON TIME   OFF TIME\n\r-----------------------------------\n\r";
@@ -155,10 +156,10 @@ static void UserApp1SM_Idle(void)
   static u8 au8LedNames2[] = {'w','p','b','c','g','y','o','r'};
   static u8 au8Led[] = { WHITE,WHITE, PURPLE, BLUE, CYAN, GREEN, YELLOW, ORANGE, RED};
   static u8 u8Number = 0;
-  static u32 u32Time1;
-  static u32 u32Time2;
-  static u8 u8Number1 = 0;
-  static u8 u8Number2 = 0;
+  static u32 u32StartTime;
+  static u32 u32EndTime;
+  static u8 u8StartTimeNumber = 0;
+  static u8 u8EndTimeNumber = 0;
   static u8 u8Address1 = 1;
   static u8 u8Address2 = 1;
   static u32 au32Time[]={1,1,10,100,1000,10000,100000};
@@ -169,6 +170,7 @@ static void UserApp1SM_Idle(void)
   static u8 u8Count = 0;
   static bool bInput = TRUE;
   static bool bAgain = FALSE;
+  static bool bReenter = FALSE;
   
   if(u8Menu == 0)
   {
@@ -186,6 +188,11 @@ static void UserApp1SM_Idle(void)
       u8Menu=DebugScanf(G_au8DebugScanfBuffer)+1;
       DebugPrintf(au8UserMessage3);
       DebugLineFeed();
+      for(u8Count=0;u8Count<=u8List;u8Count++)
+        {
+          LedDisplayPrintListLine(u8Count);
+        }
+        DebugPrintf(au8UserMenu2);
     }
     if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] != 0x32 && G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]!=0x31  &&G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]!=0x00)
     {
@@ -236,15 +243,15 @@ static void UserApp1SM_Idle(void)
           if(u8Sign == 1)
           {
             u32Count++;
-            u8Number1++;
+            u8StartTimeNumber++;
             if(G_au8DebugScanfBuffer[u32Count]==0x2D)
             {
               u8Sign=2;
-              for(u8Address1=1;u8Address1<u8Number1;u8Address1++)
+              for(u8Address1=1;u8Address1<u8StartTimeNumber;u8Address1++)
               {
                 if(G_au8DebugScanfBuffer[u32Count-u8Address1]>=48 && G_au8DebugScanfBuffer[u32Count-u8Address1]<=57)
                 {
-                  u32Time1=u32Time1+(G_au8DebugScanfBuffer[u32Count-u8Address1]-48)*au32Time[u8Address1];
+                  u32StartTime=u32StartTime+(G_au8DebugScanfBuffer[u32Count-u8Address1]-48)*au32Time[u8Address1];
                 }
                 else
                 {
@@ -260,7 +267,7 @@ static void UserApp1SM_Idle(void)
             if(G_au8DebugScanfBuffer[u32Count]!=0x0D)
             {
               u32Count++;
-              u8Number2++;
+              u8EndTimeNumber++;
             }
             //Calculation the number of End Time
             
@@ -268,11 +275,11 @@ static void UserApp1SM_Idle(void)
             {
               bInput=FALSE;
               u8Sign=3;
-              for(u8Address2=1;u8Address2<u8Number2;u8Address2++)
+              for(u8Address2=1;u8Address2<u8EndTimeNumber;u8Address2++)
               {
                 if(G_au8DebugScanfBuffer[u32Count-u8Address2]>=48 && G_au8DebugScanfBuffer[u32Count-u8Address2]<=57)
                 {
-                  u32Time2=u32Time2+(G_au8DebugScanfBuffer[u32Count-u8Address2]-48)*au32Time[u8Address2];
+                  u32EndTime=u32EndTime+(G_au8DebugScanfBuffer[u32Count-u8Address2]-48)*au32Time[u8Address2];
                 }
                 else
                 {
@@ -282,7 +289,7 @@ static void UserApp1SM_Idle(void)
               //Calculation End Time
               
               DebugLineFeed();
-              if(u8Error == 0 && u32Time2<=u32Time1)
+              if(u8Error == 0 && u32EndTime<=u32StartTime)
               {
                 u8Error=6;
               }
@@ -297,13 +304,13 @@ static void UserApp1SM_Idle(void)
       if(bAgain == FALSE)
       {
         C1.eLED = au8Led[u8Number];
-        C1.u32Time = u32Time1;
+        C1.u32Time = u32StartTime;
         C1.bOn = TRUE;
         C1.eCurrentRate = LED_PWM_100;
         LedDisplayAddCommand(USER_LIST , &C1);
         
         C1.eLED = au8Led[u8Number];
-        C1.u32Time = u32Time2;
+        C1.u32Time = u32EndTime;
         C1.bOn = FALSE;
         C1.eCurrentRate = LED_PWM_0;
         LedDisplayAddCommand(USER_LIST , &C1);
@@ -314,13 +321,13 @@ static void UserApp1SM_Idle(void)
       {
         bSign=FALSE;
         u8Number = 0;
-        u8Number1 = 0;
-        u8Number2 = 0;
+        u8StartTimeNumber = 0;
+        u8EndTimeNumber = 0;
         u8Address1 = 1;
         u8Address2 = 1;
         u8Sign = 0;
-        u32Time1=0;
-        u32Time2=0;
+        u32StartTime=0;
+        u32EndTime=0;
       }
       //Initialization
       
@@ -341,13 +348,13 @@ static void UserApp1SM_Idle(void)
     {
       bSign=FALSE;
       u8Number = 0;
-      u8Number1 = 0;
-      u8Number2 = 0;
+      u8StartTimeNumber = 0;
+      u8EndTimeNumber = 0;
       u8Address1 = 1;
       u8Address2 = 1;
       u8Sign = 0;
-      u32Time1=0;
-      u32Time2=0;
+      u32StartTime=0;
+      u32EndTime=0;
       u32Count=G_u8DebugScanfCharCount;
       bInput=TRUE;
       switch(u8Error)
@@ -378,23 +385,49 @@ static void UserApp1SM_Idle(void)
   }
   if(u8Menu==2)
   {
-    u8Menu=0;
-    for(u8Count=0;u8Count<=u8List;u8Count++)
+    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] == '0')
     {
-      LedDisplayPrintListLine(u8Count);
+      bReenter=FALSE;
     }
-    DebugPrintf(au8UserMenu1);
-    bInput=TRUE;
-    bSign=FALSE;
-    u8Number = 0;
-    u8Number1 = 0;
-    u8Number2 = 0;
-    u8Address1 = 1;
-    u8Address2 = 1;
-    u8Sign = 0;
-    u32Time1=0;
-    u32Time2=0;
-    u32Count=0;
+    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] == '9')
+    {
+      bReenter=TRUE;
+    }
+    if(G_u8DebugScanfCharCount!=0)
+    { 
+      bInput=TRUE;
+      bSign=FALSE;
+      u8Number = 0;
+      u8StartTimeNumber = 0;
+      u8EndTimeNumber = 0;
+      u8Address1 = 1;
+      u8Address2 = 1;
+      u8Sign = 0;
+      u32StartTime=0;
+      u32EndTime=0;
+      u32Count=0;
+      if(bReenter)
+      {
+       
+        u8Menu=0;
+        DebugPrintf(au8UserMenu1);
+        u8Count=DebugScanf(G_au8DebugScanfBuffer);
+        LedDisplayStartList();
+      }
+      //Clean up Command
+      if(bReenter==FALSE)
+      {
+        
+        u8Menu=1;
+        DebugPrintf(au8UserMessage1);
+        DebugPrintf(au8UserMessage2);
+        DebugLineFeed();
+        u32Count=0;
+        u8Count=DebugScanf(G_au8DebugScanfBuffer);
+      }
+      //Not Clean up Command
+    }
+    
   }
   
   if(u8Menu==3)
@@ -405,13 +438,13 @@ static void UserApp1SM_Idle(void)
     u8Count=DebugScanf(G_au8DebugScanfBuffer);
     bSign=FALSE;
     u8Number = 0;
-    u8Number1 = 0;
-    u8Number2 = 0;
+    u8StartTimeNumber = 0;
+    u8EndTimeNumber = 0;
     u8Address1 = 1;
     u8Address2 = 1;
     u8Sign = 0;
-    u32Time1=0;
-    u32Time2=0;
+    u32StartTime=0;
+    u32EndTime=0;
     u32Count=0;
   }//The false mode
   
