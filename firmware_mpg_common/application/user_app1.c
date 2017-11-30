@@ -56,7 +56,13 @@ static u8 au8UserMenu1[]="************************************\n\rPress 1 to pro
 static u8 au8UserMessage1[]="\n\rEnter commands as LED-ONTIME-OFFTIME and press Enter\n\rTime is in milliseconds, max 100 commands";
 static u8 au8UserMessage2[]="\n\rLED colors: R(r),O(o),Y(y),G(g),C(c),B(b),P(p),W(w)\n\rExample: R-100-200 (RED on at 100ms and off at 200ms)\n\rPress Enter on blank line to end\n\r";
 static u8 au8UserMessage3[]="\n\rLED   ON TIME   OFF TIME\n\r-----------------------------------\n\r";
-static u8 au8Error[]="\n\rThe Command is wrong\n\r";
+static u8 au8Error[]="\n\rThe command is wrong\n\r";
+static u8 au8Error1[]="\n\rThe LedName is wrong\n\r";
+static u8 au8Error2[]="\n\rThe charcter after LedName is not '-'\n\r";
+static u8 au8Error3[]="\n\rStart time is not number\n\r";
+static u8 au8Error4[]="The charcter after Start time is not '-'\n\r";
+static u8 au8Error5[]="\n\rEnd time is not number\n\r";
+static u8 au8Error6[]="\n\rStart time is larger than End time\n\r";
 /**********************************************************************************************************************
 Function Definitions
 **********************************************************************************************************************/
@@ -122,7 +128,7 @@ Promises:
 void UserApp1RunActiveState(void)
 {
   UserApp1_StateMachine();
-
+  
 } /* end UserApp1RunActiveState */
 
 
@@ -139,284 +145,307 @@ State Machine Function Definitions
 /* Wait for input */
 static void UserApp1SM_Idle(void)
 {
-  static u8 au8Colour[2][8]={{'W','P','B','C','G','Y','O','R'},
-  {'w','p','b','c','g','y','o','r'}};
+  static u8 u8Pattern = 0;
+  static u32 u32DebugNumber=0;
+  static u8 au8Debug[20];
+  static u8 u8Right = 0;
+  static u8 u8Error = 0;
+  static bool bJudge = FALSE;
   static u8 au8LedNames[]={WHITE,WHITE, PURPLE, BLUE, CYAN, GREEN, YELLOW, ORANGE, RED};
   static u8 u8Colour1 = 0;
   static u8 u8Colour2 = 0;
-  static u8 u8Sign = 0;
-  static u32 u32Counter = 0;
-  static u32 u32Number1 = 0;
-  static u32 u32Number2 =0;
-  static u32 u32Number3 = 0;
-  static u32 u32Count = 0;
-  static u8 u8Right = 0;
-  static u32 u32Start1 = 0;
-  static u32 u32Start = 0;
-  static u32 u32End1 = 0;
-  static u32 u32End = 0;
-  static bool bInput = TRUE;
-  static LedCommandType L;
+  static u8 u8SignNumber = 0;
+  static u32 u32StartTime = 0;
+  static u32 u32EndTime = 0;
+  static bool bAgain = FALSE;
+  static LedCommandType X;
   static u8 u8List = 0;
-  static bool bAgain=FALSE;
-  static u8 u8Menu = 0;
   static u8 u8Count = 0;
   
-  if(u8Menu==0)
+  if(u8Pattern==0)
   {
     if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] == 0x31)
     {
-      u8Menu=DebugScanf(G_au8DebugScanfBuffer);
+      u8Pattern=DebugScanf(G_au8DebugScanfBuffer);
       DebugPrintf(au8UserMessage1);
       DebugPrintf(au8UserMessage2);
       DebugLineFeed();
-      u32Count=0;
-    }  
+      LedDisplayStartList();
+    }
     if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] == 0x32)
     {
       u8Count=0;
-      u8Menu=DebugScanf(G_au8DebugScanfBuffer)+1;
+      u8Pattern=DebugScanf(G_au8DebugScanfBuffer)+1;
       DebugPrintf(au8UserMessage3);
       DebugLineFeed();
     }
-    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] != 0x32 && G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]!=0x31  &&G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]!=0x00)
+    else if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]!=0x00)
     {
-      u8Menu=3;
-    }
+      u8Pattern=3;
+    } 
   }
-  if(u8Menu==1)
+  //Main menu
+  
+  if(u8Pattern==1)
   {
-    
-    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1]==0x0D  )
+    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] == 0x0D)
     {
-      if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-2]!=0x0D)
+      if(G_u8DebugScanfCharCount != 1)
       {
-        if(bInput==TRUE )
+        bJudge=TRUE;
+        for(u16 i=0;i<=G_u8DebugScanfCharCount-1;i++)
         {
-          bAgain=FALSE;
-          if(u32Counter<G_u8DebugScanfCharCount)
-          {
-            u32Counter++;
-            if(G_au8DebugScanfBuffer[u32Counter]==0x2D)
-            {
-              if(u32Number1!=0)
-              {
-                u32Number2=u32Counter;
-                u8Right++;
-              }
-              if(u32Number1==0)
-              {
-                u32Number1=u32Counter;
-                u8Right++;
-              }
-            }
-            if(G_au8DebugScanfBuffer[u32Counter]==0x0D)
-            {
-              u32Number3=u32Counter;
-              u8Right++;
-            }
-          }
-          
-          
-          
-          if(u8Right==3 )
-          {
-            if(u32Count==0)
-            {
-              u32Count=u32Number1-1;
-            }
-            
-            if(u8Colour1<=2 && u8Sign==0)
-            {
-              if(u8Colour1==0)
-              {
-                if(G_au8DebugScanfBuffer[u32Count]==au8Colour[0][u8Colour2])
-                {
-                  u8Sign=1;
-                  u8Right++;
-                }
-                u8Colour2++;
-                
-              }
-              if(u8Colour1==1)
-              {
-                if(G_au8DebugScanfBuffer[u32Count]==au8Colour[1][u8Colour2])
-                {
-                  u8Sign=1;
-                  u8Right++;
-                }
-                u8Colour2++;
-              }
-              if(u8Colour2>8)
-              {
-                u8Colour1++;
-                u8Colour2=0;
-              }
-            }
-          }
-          
-          if(u8Right==4 )
-          {
-            if(u32Count<=u32Number1)
-            {
-              u32Count=u32Number1+1;
-            }
-            if(G_au8DebugScanfBuffer[u32Count]>='0' && G_au8DebugScanfBuffer[u32Count]<='9')
-            {
-              u32Start1=G_au8DebugScanfBuffer[u32Count]-'0';
-              for(u16 i=0;i<(u32Number2-u32Count-1);i++)
-              {
-                u32Start1=u32Start1*10;
-              }
-              u32Count++;
-              u32Start=u32Start+u32Start1;
-            }
-            if(u32Count>=u32Number2)
-            {
-              u8Right=5;
-            }
-          }
-          if(u8Right==5)
-          {
-            if(u32Count<=u32Number2)
-            {
-              u32Count=u32Number2+1;
-            }
-            
-            if(G_au8DebugScanfBuffer[u32Count]>='0' && G_au8DebugScanfBuffer[u32Count]<='9')
-            {
-              u32End1=G_au8DebugScanfBuffer[u32Count]-'0';
-              for(u16 i=0;i<(u32Number3-u32Count-1);i++)
-              {
-                u32End1=u32End1*10;
-              }
-              u32Count++;      
-              u32End=u32End+u32End1;
-            }
-            if(u32Count>=u32Number3)
-            {
-              u8Right++;
-              bInput=FALSE;
-            }
-          }
-          if(u8Right==6)
-          {
-            if(u32End>u32Start)
-            {
-              DebugLineFeed();
-              u8Right=7;
-            }
-          }
-            
+          au8Debug[i]=G_au8DebugScanfBuffer[i];
         }
-        
-        if(bInput==FALSE)
+        u32DebugNumber=DebugScanf(G_au8DebugScanfBuffer);
+      }
+      if(G_u8DebugScanfCharCount == 1)
+      {
+        bJudge=FALSE;
+        u8Pattern=0;
+        u32DebugNumber=DebugScanf(G_au8DebugScanfBuffer);
+      }
+    }
+    
+    if(bJudge==TRUE)
+    {
+      if(u8Error==0)
+      {
+        if( u8Right ==0)
         {
-          if(u8Right==7 && bAgain==FALSE)
+          static u8 au8Colour[2][8]={{'W','P','B','C','G','Y','O','R'},
+          {'w','p','b','c','g','y','o','r'}};
+          if(u8Colour1<2)
           {
-            L.eLED = au8LedNames[u8Colour2];
-            L.u32Time = u32Start;
-            L.bOn = TRUE;
-            L.eCurrentRate = LED_PWM_100;
-            LedDisplayAddCommand(USER_LIST , &L);
+            if(u8Colour1==0)
+            {
+              if(au8Debug[0]==au8Colour[0][u8Colour2])
+              {
+                
+                u8Right++;
+              }
+              u8Colour2++;
+            }
+            if(u8Colour1==1)
+            {
+              if(au8Debug[0]==au8Colour[1][u8Colour2])
+              {
+                
+                u8Right++;
+              }
+              u8Colour2++;
+            }
+            if(u8Colour2>8)
+            {
+              u8Colour1++;
+              u8Colour2=0;
+            }
+          }
+          else if(u8Right==0)
+          {
+            u8Error=1;
+          }
+        }
+        //Judge Ledname
+        
+        if(u8Right==1)
+        {
+          if(au8Debug[1]==0x2D)
+          {
+            u8Right++;
+          }
+          else
+          {
+            u8Error=2;
+          }
+        }
+        //Judge the first '-'
+        
+        if(u8Right==2)
+        {
+          for(u16 i=2;i<=8;i++ )
+          {
+            if(au8Debug[i]==0x2D)
+            {
+              u8SignNumber = i;
+              u8Right++;
+            }
+            if(i==8 && u8SignNumber==0)
+            {
+              u8Error=4;
+            }
+          }
+        }
+        //Judge the second '-'
+        
+        if(u8Right==3)
+        {
+          for(u16 i=2;i<=u32DebugNumber-1;i++ )
+          {
+            static u32 u32Start1 = 0;
+            static u32 u32End1 = 0;
+            if(i<u8SignNumber)
+            {
+              if(au8Debug[i]>='0' && au8Debug[i]<='9')
+              {
+                u32Start1=au8Debug[i]-'0';
+                for(u16 m=0;m<(u8SignNumber-i-1);m++)
+                {
+                  u32Start1=u32Start1*10;
+                }
+                u32StartTime=u32StartTime+u32Start1;
+              }
+              else
+              {
+                u8Error=3;
+              }
+            }
+            //Start Time
+            if(i>u8SignNumber && i<u32DebugNumber-1)
+            {
+              if(au8Debug[i]>='0' && au8Debug[i]<='9')
+              {
+                u32End1=au8Debug[i]-'0';
+                for(u16 m=0;m<(u32DebugNumber-i-2);m++)
+                {
+                  u32End1=u32End1*10;
+                }
+                u32EndTime=u32EndTime+u32End1;
+              }
+              else 
+              {
+                u8Error=5;
+              }
+            }
+            //End Time
+            if(au8Debug[i]==0x0D)
+            {
+              u8Right++;
+            }
+          } 
+        }
+        //Judge Start Time and End Time
+        
+        if(u8Right==4 && u8Error==0)
+        {
+          if(u32StartTime>=u32EndTime)
+          {
+            u8Error=6;
+          }
+          else
+          {
+            u8Right++;
+          }
+        }
+        //Judge Start Time smaller than End Time
+        
+        if(u8Right==5)
+        {
+          if(bAgain==FALSE)
+          {
+            X.eLED = au8LedNames[u8Colour2];
+            X.u32Time = u32StartTime;
+            X.bOn = TRUE;
+            X.eCurrentRate = LED_PWM_100;
+            LedDisplayAddCommand(USER_LIST , &X);
             
-            L.eLED = au8LedNames[u8Colour2];
-            L.u32Time = u32End;
-            L.bOn = FALSE;
-            L.eCurrentRate = LED_PWM_0;
-            LedDisplayAddCommand(USER_LIST , &L);
+            X.eLED = au8LedNames[u8Colour2];
+            X.u32Time = u32EndTime;
+            X.bOn = FALSE;
+            X.eCurrentRate = LED_PWM_0;
+            LedDisplayAddCommand(USER_LIST , &X);
             bAgain=TRUE;
             u8List++;
           }
           if(bAgain)
           {
+            for(u16 i=0;i<=20;i++)
+            {
+              au8Debug[i]=0x00;
+            }
+            u8Right=0;
+            u8Error=0;
             u8Colour1 = 0;
             u8Colour2 = 0;
-            u8Sign = 0;
-            u32Number1 = 0;
-            u32Number2 =0;
-            u32Number3 = 0;
-            u32Count = 0;
-            u8Right = 0;
-            u32Start1 = 0;
-            u32Start = 0;
-            u32End1 = 0;
-            u32End = 0;
-            bInput = TRUE;
-            u32Counter=G_u8DebugScanfCharCount;
+            u8SignNumber = 0;
+            u32StartTime = 0;
+            u32EndTime = 0;
+            bJudge = FALSE;
+            bAgain = FALSE;
+            DebugLineFeed();
           }
         }
       }
-      if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-2]==0x0D)
+      
+      if(u8Error!=0)
       {
-        u8Menu=0;
+        for(u16 i=0;i<=20;i++)
+        {
+          au8Debug[i]=0x00;
+        }
+        u8Right=0;
+        
         u8Colour1 = 0;
         u8Colour2 = 0;
-        u8Sign = 0;
-        u32Number1 = 0;
-        u32Number2 =0;
-        u32Number3 = 0;
-        u32Count = 0;
-        u8Right = 0;
-        u32Start1 = 0;
-        u32Start = 0;
-        u32End1 = 0;
-        u32End = 0;
-        bInput = TRUE;
-        u32Counter=G_u8DebugScanfCharCount;
-        u8Count=DebugScanf(G_au8DebugScanfBuffer);
-        
+        u8SignNumber = 0;
+        u32StartTime = 0;
+        u32EndTime = 0;
+        bJudge = FALSE;
+        bAgain = FALSE;
+        switch(u8Error)
+        {
+        case 1 :
+          u8Error=0;
+          DebugPrintf(au8Error1);
+          break;
+        case 2 :
+          u8Error=0;
+          DebugPrintf(au8Error2);
+          break;
+        case 3 :
+          u8Error=0;
+          DebugPrintf(au8Error3);
+          break;
+        case 4:
+          u8Error=0;
+          DebugPrintf(au8Error4);
+          break;
+        case 5 :
+          u8Error=0;
+          DebugPrintf(au8Error5);
+          break;
+        case 6 :
+          u8Error=0;
+          DebugPrintf(au8Error6);
+          break;
+        }
       }
+      //The form of error
     }
   }
-  if(u8Menu==2)
+  
+  if(u8Pattern==2)
   {
-    u8Menu=0;
+    u8Pattern=0;
     for(u8Count=0;u8Count<=u8List;u8Count++)
     {
       LedDisplayPrintListLine(u8Count);
     }
     DebugPrintf(au8UserMenu1);
-    u8Colour1 = 0;
-    u8Colour2 = 0;
-    u8Sign = 0;
-    u32Number1 = 0;
-    u32Number2 =0;
-    u32Number3 = 0;
-    u32Count = 0;
-    u8Right = 0;
-    u32Start1 = 0;
-    u32Start = 0;
-    u32End1 = 0;
-    u32End = 0;
-    bInput = TRUE;
-    u32Counter=G_u8DebugScanfCharCount;
   }
-  if(u8Menu==3)
+  //Show
+  
+  if(u8Pattern==3)
   {
-    u8Menu=0;
+    u8Pattern=0;
     DebugPrintf(au8Error); 
     DebugPrintf(au8UserMenu1);
-    u8Colour1 = 0;
-    u8Colour2 = 0;
-    u8Sign = 0;
-    u32Number1 = 0;
-    u32Number2 =0;
-    u32Number3 = 0;
-    u32Count = 0;
-    u8Right = 0;
-    u32Start1 = 0;
-    u32Start = 0;
-    u32End1 = 0;
-    u32End = 0;
-    bInput = TRUE;
-    u8Count=DebugScanf(G_au8DebugScanfBuffer);
-    u32Counter=G_u8DebugScanfCharCount;
+    u8Colour2=DebugScanf(G_au8DebugScanfBuffer);
   }
+  
+  
 
-  
-  
-  
+
 } /* end UserApp1SM_Idle() */
                       
             
