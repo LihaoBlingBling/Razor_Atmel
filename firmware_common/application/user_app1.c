@@ -51,6 +51,8 @@ extern volatile u32 G_u32ApplicationFlags;             /* From main.c */
 
 extern volatile u32 G_u32SystemTime1ms;                /* From board-specific source file */
 extern volatile u32 G_u32SystemTime1s;                 /* From board-specific source file */
+extern u8 G_au8DebugScanfBuffer[];  /* From debug.c */
+extern u8 G_u8DebugScanfCharCount;  /* From debug.c */
 
 
 /***********************************************************************************************************************
@@ -59,7 +61,12 @@ Variable names shall start with "UserApp1_" and be declared as static.
 ***********************************************************************************************************************/
 static fnCode_type UserApp1_StateMachine;            /* The state machine function pointer */
 //static u32 UserApp1_u32Timeout;                      /* Timeout counter used across states */
-
+static u8 au8UserMessage1[] = "\n\rEntering state 1\n\r";
+static u8 au8UserMessage2[] = "\n\rEntering state 2\n\r";
+static u8 UserApp_au8Menu1[] = "STATE 1";
+static u8 UserApp_au8Menu2[] = "STATE 2";
+static u8 u8State = 0;
+static u32 u32Count = 0;
 
 /**********************************************************************************************************************
 Function Definitions
@@ -90,7 +97,7 @@ void UserApp1Initialize(void)
   LedOff(LCD_RED);
   LedOff(LCD_GREEN);
   LedOff(LCD_BLUE);
-  LedPWM(WHITE, LED_PWM_100);
+  LedOff(WHITE);
   LedOff(PURPLE);
   LedOff(BLUE);
   LedOff(CYAN);
@@ -98,6 +105,7 @@ void UserApp1Initialize(void)
   LedOff(YELLOW);
   LedOff(ORANGE);
   LedOff(RED); 
+  LCDCommand(LCD_CLEAR_CMD);
 
  
   /* If good initialization, set state to Idle */
@@ -148,93 +156,127 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-  static u16 u16Counter = 0;
-  static u8 u8Counter = 0;
-  u16Counter++;
-  if(u16Counter == 550)
-  {
-    LedOff(WHITE);  
-    LedPWM(PURPLE, LED_PWM_70); 
-   }
+  static u32 u32Counter = 0;
+  static u8 u8Buzzer = 0;
+  u32Counter++;
 
-  else if(u16Counter == 950)
+  if( WasButtonPressed(BUTTON1)  )//BUTTON
   {
-    LedOff(PURPLE); 
-    LedPWM(BLUE, LED_PWM_50);   
+    ButtonAcknowledge(BUTTON1);
+    u8Buzzer=0;
+    u8State = 1;
+    Return();
   }
-  else if(u16Counter == 1250)
+  if( WasButtonPressed(BUTTON2)  )
   {
-    LedOff(BLUE);   
-    LedPWM(CYAN, LED_PWM_30); 
+    ButtonAcknowledge(BUTTON2);
+    u8Buzzer=1;
+    u8State = 2;
+    Return(); 
   }
-  else if(u16Counter == 1500)
+  
+  if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-1] == 0x0D )//Debug
   {
-    LedOff(CYAN);   
-    LedPWM(GREEN, LED_PWM_20); 
-  }
-  else if(u16Counter == 1700)
-  {
-    LedOff(GREEN);  
-    LedPWM(YELLOW, LED_PWM_15); 
-  }
-  else if(u16Counter == 1850)
-  {
-    LedOff(YELLOW); 
-    LedPWM(ORANGE, LED_PWM_10);
-  }
-  else if(u16Counter == 1950)
-  {
-    LedOff(ORANGE); 
-    LedPWM(RED, LED_PWM_5);
-    u8Counter++;
-  }
-  else if(u16Counter == 2000)
-  {
-    u16Counter=0;
-    LedOn(WHITE);
-    LedOff(PURPLE);
-    LedOff(BLUE);
-    LedOff(CYAN);
-    LedOff(GREEN);
-    LedOff(YELLOW);
-    LedOff(ORANGE);
-    LedOff(RED);
-  }
-  if(u8Counter<=7)
-  {
-    if(u8Counter & 0x01)
+    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-2] == 0x31)
     {
-      LedOn(LCD_RED);
+      ButtonAcknowledge(BUTTON1);
+      u8Buzzer=0;
+      u8State = 1;
+      Return();
     }
-    else
+    if(G_au8DebugScanfBuffer[G_u8DebugScanfCharCount-2] == 0x32)
     {
-      LedOff(LCD_RED);
-    }
-
-    if(u8Counter & 0x02)
-    {
-      LedOn(LCD_GREEN);
-    }
-    else
-    {
-      LedOff(LCD_GREEN);
-    }
-
-    if(u8Counter & 0x04)
-    {
-      LedOn(LCD_BLUE);
-    }
-    else
-    {
-      LedOff(LCD_BLUE);
+      ButtonAcknowledge(BUTTON2);
+      u8Buzzer=1;
+      u8State = 2;
+      Return(); 
     }
   }
-  else
+  
+  if(u8Buzzer==1)//Turn on BUZZER1
   {
-    u8Counter=0;
-  }
-} /* end UserApp1SM_Idle() */
     
+    if(u32Counter==10 && u32Counter<=110)
+    {
+      PWMAudioSetFrequency(BUZZER1, 200);
+      PWMAudioOn(BUZZER1);
+    }
+    if(u32Counter>110)
+    {
+      PWMAudioOff(BUZZER1);
+    }
+    if(u32Counter>=1000)
+    {
+      u32Counter=0;
+    }
+  }
+  
+  if(u8State==1)
+  {
+    State1();
+  }
+  
+  if(u8State==2)
+  { 
+    State2();
+  }
+  
+
+} /* end UserApp1SM_Idle() */
+
+static void State1(void)
+{
+  u8State=0;
+  u32Count=DebugScanf(G_au8DebugScanfBuffer);//Debug Print
+  DebugPrintf(au8UserMessage1);
+  
+  LCDCommand(LCD_CLEAR_CMD);//LCD Print
+  LCDMessage(LINE1_START_ADDR, UserApp_au8Menu1);
+  
+  LedOn(WHITE);//LED
+  LedOn(PURPLE);
+  LedOn(BLUE);
+  LedOn(CYAN);
+  
+  LedOn(LCD_RED);//LCD backlight
+  LedOn(LCD_BLUE);
+  
+  PWMAudioOff(BUZZER1);
+}
+
+static void State2(void)
+{
+  u8State=0;
+  u32Count=DebugScanf(G_au8DebugScanfBuffer);
+  DebugPrintf(au8UserMessage2);
+  
+  LCDCommand(LCD_CLEAR_CMD);
+  LCDMessage(LINE1_START_ADDR, UserApp_au8Menu2);
+  
+  LedBlink(GREEN, LED_1HZ);
+  LedBlink(YELLOW, LED_2HZ);
+  LedBlink(ORANGE, LED_4HZ);
+  LedBlink(RED, LED_8HZ);
+  
+  LedOn(LCD_RED);
+  LedOn(LCD_GREEN);
+}
+
+static void Return(void)
+{
+  LedOff(LCD_RED);
+  LedOff(LCD_GREEN);
+  LedOff(LCD_BLUE);
+  LedOff(WHITE);
+  LedOff(PURPLE);
+  LedOff(BLUE);
+  LedOff(CYAN);
+  LedOff(GREEN);
+  LedOff(YELLOW);
+  LedOff(ORANGE);
+  LedOff(RED);
+  
+}
 
 /*-------------------------------------------------------------------------------------------------------------------*/
 /* Handle an error */

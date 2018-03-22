@@ -59,6 +59,10 @@ static void UserApp1SM_Idle(void);
 
 static void UserApp1SM_Error(void);         
 
+static void State1(void);
+static void State2(void);
+static void Return(void);
+
 
 #endif /* __USER_APP1_H */
 
