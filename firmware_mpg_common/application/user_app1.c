@@ -201,35 +201,12 @@ static void UserApp1SM_Idle(void)
 
   static u8 au8TestMessage[] = {0, 0, 0, 0, 0, 0, 0, 0};
   u8 au8DataContent[] = "xxxxxxxxxxxxxxxx";
+  static u8 au8Sent[6] = "";
+  static u8 au8Missed[6] = "";
   
-  /* Check all the buttons and update au8TestMessage according to the button state */ 
   au8TestMessage[0] = 0x5B;
   au8TestMessage[4] = 0xFF;
-  if( IsButtonPressed(BUTTON0) )
-  {
-    au8TestMessage[0] = 0xff;
-  }
-  
-  //au8TestMessage[1] = 0x00;
-  if( IsButtonPressed(BUTTON1) )
-  {
-    au8TestMessage[1] = 0xff;
-  }
 
-#ifdef EIE1
-  //au8TestMessage[2] = 0x00;
-  if( IsButtonPressed(BUTTON2) )
-  {
-    au8TestMessage[2] = 0xff;
-  }
-
-  //au8TestMessage[3] = 0x00;
-  if( IsButtonPressed(BUTTON3) )
-  {
-    au8TestMessage[3] = 0xff;
-  }
-#endif /* EIE1 */
-  
   if( AntReadAppMessageBuffer() )
   {
     if(G_au8AntApiCurrentMessageBytes[3]==0x06)
@@ -243,6 +220,13 @@ static void UserApp1SM_Idle(void)
           au8TestMessage[1]++;
         }
       }
+    }
+    /*Display missed messages on the LCD*/
+    for (u8 i=0; i<3; i++)
+    {
+      au8Missed[2*i] = HexToASCIICharUpper(au8TestMessage[i+1]/16);
+      au8Missed[2*i+1] = HexToASCIICharUpper(au8TestMessage[i+1 ]%16);
+      LCDMessage(LINE2_START_ADDR+7, au8Missed);      
     }
      /* New message from ANT task: check what it is */
     if(G_eAntApiCurrentMessageClass == ANT_DATA)
@@ -273,6 +257,13 @@ static void UserApp1SM_Idle(void)
         {
           au8TestMessage[5]++;
         }
+      }
+      /*Display sent messages on the LCD*/
+       for (u8 i=0; i<3; i++)
+      {
+        au8Sent[2*i] = HexToASCIICharUpper(au8TestMessage[i+5]/16);
+        au8Sent[2*i+1] = HexToASCIICharUpper(au8TestMessage[i+5]%16);
+        LCDMessage(LINE2_START_ADDR, au8Sent);
       }
       AntQueueAcknowledgedMessage(ANT_CHANNEL_USERAPP, au8TestMessage);
     }
