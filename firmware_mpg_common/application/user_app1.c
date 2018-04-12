@@ -198,30 +198,32 @@ static void UserApp1SM_AntChannelAssign()
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-  static u8 au8TestMessage[] = {0, 0, 0, 0, 0xA5, 0, 0, 0};
+
+  static u8 au8TestMessage[] = {0, 0, 0, 0, 0, 0, 0, 0};
   u8 au8DataContent[] = "xxxxxxxxxxxxxxxx";
   
   /* Check all the buttons and update au8TestMessage according to the button state */ 
-  au8TestMessage[0] = 0x00;
+  au8TestMessage[0] = 0x5B;
+  au8TestMessage[4] = 0xFF;
   if( IsButtonPressed(BUTTON0) )
   {
     au8TestMessage[0] = 0xff;
   }
   
-  au8TestMessage[1] = 0x00;
+  //au8TestMessage[1] = 0x00;
   if( IsButtonPressed(BUTTON1) )
   {
     au8TestMessage[1] = 0xff;
   }
 
 #ifdef EIE1
-  au8TestMessage[2] = 0x00;
+  //au8TestMessage[2] = 0x00;
   if( IsButtonPressed(BUTTON2) )
   {
     au8TestMessage[2] = 0xff;
   }
 
-  au8TestMessage[3] = 0x00;
+  //au8TestMessage[3] = 0x00;
   if( IsButtonPressed(BUTTON3) )
   {
     au8TestMessage[3] = 0xff;
@@ -230,6 +232,18 @@ static void UserApp1SM_Idle(void)
   
   if( AntReadAppMessageBuffer() )
   {
+    if(G_au8AntApiCurrentMessageBytes[3]==0x06)
+    {
+      au8TestMessage[3]++;
+      if(au8TestMessage[3] == 0)
+      {
+        au8TestMessage[2]++;
+        if(au8TestMessage[2] == 0)
+        {
+          au8TestMessage[1]++;
+        }
+      }
+    }
      /* New message from ANT task: check what it is */
     if(G_eAntApiCurrentMessageClass == ANT_DATA)
     {
@@ -260,7 +274,7 @@ static void UserApp1SM_Idle(void)
           au8TestMessage[5]++;
         }
       }
-      AntQueueBroadcastMessage(ANT_CHANNEL_USERAPP, au8TestMessage);
+      AntQueueAcknowledgedMessage(ANT_CHANNEL_USERAPP, au8TestMessage);
     }
   } /* end AntReadData() */
   
