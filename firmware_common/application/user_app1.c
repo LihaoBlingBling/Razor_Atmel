@@ -136,54 +136,48 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp1SM_Idle(void)
 {
-  static u32    u32Counter=0;
-  static u32    u32Limit=500;
-  static u32    u32Range=0;
-  static u8     u8Light;
- 
-  static bool bLightIsOn = FALSE;
+  static u32 u32Statue;
+  static u32 u32TimeCounter;
   
-  u32Counter++; /*increase 1 per ms*/
-  u32Range++;
-  if(u32Limit>=500)
+  //Connect Button with PA_09_I2C_SDA
+  u32Statue = AT91C_BASE_PIOA->PIO_PDSR & PA_09_I2C_SDA;
+  
+  if(u32Statue == 0)
   {
-    u8Light=1;
-  }
-  else if(u32Limit<=10)
-  {
-    u8Light=0;
-  }
-  if(u32Counter == u32Limit)
-  {
-    u32Counter=0;
-    if(bLightIsOn)
-    {
-      HEARTBEAT_OFF();
-      bLightIsOn = FALSE;
-    }
-    else
-    {
-      HEARTBEAT_ON();
-      bLightIsOn = TRUE;
-      
-    }
-    if(u32Range >= COUNTER_LIMIT_MS)
-      {
-        u32Range=0;
-        if(u8Light == 1)
-        {
-          u32Limit=u32Limit/2;
-        }
-        else
-        {
-          u32Limit=u32Limit*2;
-        }
-       
-      }
+    //Connect Led_Red with PA_15_BLADE_SCK   Connect Led_Green with PA_14_BLADE_MOSI
+    u32TimeCounter++;
     
+    if(u32TimeCounter<=500)
+    {
+      PWMAudioSetFrequency(BUZZER1, 500);
+      PWMAudioOn(BUZZER1);
+      // Turn on Red and Turn off Green
+      AT91C_BASE_PIOA->PIO_SODR = PA_15_BLADE_SCK;
+      AT91C_BASE_PIOA->PIO_CODR = PA_14_BLADE_MOSI;
+    }
     
+    if(u32TimeCounter>500)
+    {
+      PWMAudioSetFrequency(BUZZER1, 1000);
+      PWMAudioOn(BUZZER1);
+      //Turn on Green and Tuen off Red
+      AT91C_BASE_PIOA->PIO_SODR = PA_14_BLADE_MOSI;
+      AT91C_BASE_PIOA->PIO_CODR = PA_15_BLADE_SCK;
+    }
+    
+    if(u32TimeCounter>1000)
+    {
+      u32TimeCounter=0;
+    } 
   }
- 
+  
+  //Donot Pressed Button
+  else
+  {
+    PWMAudioOff(BUZZER1);
+    AT91C_BASE_PIOA->PIO_CODR = PA_14_BLADE_MOSI;
+    AT91C_BASE_PIOA->PIO_CODR = PA_15_BLADE_SCK;
+  }
 }/* end UserApp1SM_Idle() */
     
 
