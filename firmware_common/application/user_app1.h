@@ -19,7 +19,6 @@ Header file for user_app1.c
 
 #ifndef __USER_APP1_H
 #define __USER_APP1_H
-  
 
 /**********************************************************************************************************************
 Type Definitions
@@ -29,7 +28,18 @@ Type Definitions
 /**********************************************************************************************************************
 Constants / Definitions
 **********************************************************************************************************************/
-#define COUNTER_LIMIT_MS (u32) 2000
+/* Required constants for ANT channel configuration */
+#define ANT_CHANNEL_TYPE_USERAPP        CHANNEL_TYPE_SLAVE  // Device is a MASTER
+#define ANT_CHANNEL_USERAPP             ANT_CHANNEL_0         // Channel 0 - 7
+#define ANT_DEVICEID_LO_USERAPP         (u8)0x02              // Low byte of two-byte Device #
+#define ANT_DEVICEID_HI_USERAPP         (u8)0x00              // High byte of two-byte Device #
+#define ANT_DEVICE_TYPE_USERAPP         (u8)120               // 1 - 255
+#define ANT_TRANSMISSION_TYPE_USERAPP   (u8)4                // 1-127 (MSB is pairing bit)
+#define ANT_CHANNEL_PERIOD_LO_USERAPP   (u8)0x86              // Low byte of two-byte channel period 0x0001 - 0x7fff
+#define ANT_CHANNEL_PERIOD_HI_USERAPP   (u8)0x1F             // High byte of two-byte channel period 
+#define ANT_FREQUENCY_USERAPP           (u8)57                // 2400MHz + this number 0 - 99
+#define ANT_TX_POWER_USERAPP            RADIO_TX_POWER_4DBM   // RADIO_TX_POWER_0DBM, RADIO_TX_POWER_MINUS5DBM, RADIO_TX_POWER_MINUS10DBM, RADIO_TX_POWER_MINUS20DBM
+
 
 /**********************************************************************************************************************
 Function Declarations
@@ -55,8 +65,14 @@ void UserApp1RunActiveState(void);
 /***********************************************************************************************************************
 State Machine Declarations
 ***********************************************************************************************************************/
-static void UserApp1SM_Idle(void);    
-
+static void UserApp1SM_AntChannelAssign(void);
+static void UserApp1SM_UserChoose(void);
+static void UserApp1SM_Show(void);
+static void ShowRate(void);
+u8 HexToDec(u8 u8Char_);
+void ShowBattery(u8 u8Status);
+static void Warning (void);
+static void UserApp1SM_Battery(void);
 static void UserApp1SM_Error(void);         
 
 
