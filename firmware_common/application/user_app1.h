@@ -59,7 +59,11 @@ static void UserApp1SM_Idle(void);
 
 static void UserApp1SM_Error(void);         
 
-
+static void UserApp1SM_Change(void);
+static void UserApp1SM_Upper(void);
+static void UserApp1SM_Lower(void);
+void Show(u8 u8States);
+static void UserApp1SM_ADC(void);
 #endif /* __USER_APP1_H */
 
 
