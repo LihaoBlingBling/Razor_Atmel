@@ -59,7 +59,17 @@ static void UserApp1SM_Idle(void);
 
 static void UserApp1SM_Error(void);         
 
+void MBI_Data(u8 k);
 
+void Delay(u8 n);
+
+void CD_Data(u8 m);
+
+void LineData(u8 i);
+
+void LedData(u16 i);
+
+void ReadData(u32 a);
 #endif /* __USER_APP1_H */
 
 
