@@ -69,6 +69,8 @@ void LineData(u8 i);
 
 void LedData(u16 i);
 
+void Address(u16 w);
+
 void ReadData(u32 a);
 #endif /* __USER_APP1_H */
 

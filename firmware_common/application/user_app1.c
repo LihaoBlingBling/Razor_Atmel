@@ -62,34 +62,16 @@ static fnCode_type UserApp1_StateMachine;            /* The state machine functi
 static u8 au8LedData[80]={0};
 static u8 au8PrepareData[116] = {0};
 static u8 au8Prepare[16][14]={0};
-static u8 au8Test0[]={0x00,0x01,0x00,0x01,0xFC,0x7F,0x80,0x03,
-0x40,0x05,0x20,0x09,0x18,0x31,0x06,0xC1,
-0xE0,0x0F,0x40,0x00,0x80,0x00,0xFE,0xFF,
-0x00,0x01,0x00,0x01,0x00,0x05,0x00,0x02};/*"李",0*/
-static u8 au8Test1[]={0x20,0x08,0x40,0x04,0xFC,0x7F,0x00,0x01,
-0x00,0x01,0xF8,0x3F,0x00,0x01,0x00,0x01,
-0xFE,0xFF,0x00,0x01,0x00,0x01,0xFC,0x7F,
-0x80,0x02,0x40,0x04,0x30,0x18,0x0E,0xE0};/*"美",1*/
-static u8 au8Test2[]={0xF8,0x3F,0x00,0x01,0xFE,0x7F,0x02,0x41,
-0x74,0x9D,0x00,0x01,0x70,0x1D,0x00,0x02,
-0x00,0x01,0xFC,0x7F,0x20,0x08,0x40,0x04,
-0x80,0x03,0x40,0x04,0x30,0x18,0x0E,0xE0};/*"雯",2*/
-static u8 au8Test3[32]={0xF0,0x1F,0x10,0x10,0x10,0x10,0xF0,0x1F,
-0x10,0x10,0x10,0x10,0xF0,0x1F,0x00,0x00,
-0xFE,0xFF,0x00,0x01,0x00,0x11,0xF8,0x11,
-0x00,0x11,0x00,0x29,0x00,0x45,0xFE,0x83};/*"是",3*/
-static u8 au8Test4[] ={0x00,0x01,0x00,0x01,0x00,0x01,0x00,0x01,
-0x00,0x01,0x10,0x11,0x08,0x11,0x04,0x11,
-0x04,0x21,0x02,0x21,0x02,0x41,0x02,0x81,
-0x00,0x01,0x00,0x01,0x00,0x05,0x00,0x02};/*"小",4*/
-static u8 au8Test5[] = {0x40,0x10,0x40,0x10,0x40,0x10,0x40,0x20,
-0x44,0x24,0x44,0x64,0x44,0x64,0x44,0xA4,
-0x44,0x24,0x44,0x24,0x44,0x24,0x44,0x24,
-0x44,0x24,0xFC,0x27,0x04,0x20,0x00,0x20};/*"仙",5*/
-static u8 au8Test6[] = {0x00,0x02,0x00,0x02,0x00,0x02,0x00,0x02,
-0x00,0x04,0xFE,0xFF,0x20,0x04,0x20,0x08,
-0x20,0x08,0x40,0x10,0x40,0x18,0x80,0x06,
-0x80,0x01,0x60,0x06,0x10,0x18,0x08,0x60};/*"女",6*/
+
+static u8 au8Test0[32]= {0};
+static u8 au8Test1[32]= {0};
+static u8 au8Test2[32]= {0};
+static u8 au8Test3[32]= {0};
+static u8 au8Test4[32] = {0};
+static u8 au8Test5[32] = {0};
+static u8 au8Test6[32] = {0}; 
+
+static u8 au8Test[32] = {0};
 /**********************************************************************************************************************
 Function Definitions
 **********************************************************************************************************************/
@@ -185,36 +167,28 @@ static void UserApp1SM_Idle(void)
 {
   u8 i;
   static u8 j = 0;
-  static u8 u8Line = 0;
+  static s8 s8Line = 0;
   static bool bPrepare = FALSE;
   static u32 u32Timer = 0;
   static u16 u16State = 0;
   static u16 u16Length = 0;
 
  
-  static u16 word = '男';
+  static u16 word = '李';
+  static u16 word1 = '浩';
   
-  static u8 MSB;
-  static u8 LSB;
-  static u32 u32Address;
-  
-  MSB = word >> 8;
-  LSB = word & 0x00FF;
-  
-  if(MSB >= 0xA4 && MSB <= 0xA8 && LSB >= 0xA1)
+  Address(word);
+  for(i=0;i<32;i++)
   {
-    u32Address = 0;
+    au8Test0[i] = au8Test[i];
   }
-  else if(MSB >= 0xA1 && MSB <= 0xA9 && LSB >= 0xA1)
+  Address(word1);
+  for(i=0;i<32;i++)
   {
-    u32Address =((MSB - 0xA1)*94 + (LSB -0xA1))*32 + 0;
-  }
-  else if(MSB >= 0xB0 && MSB <= 0xF7 && LSB >= 0xA1)
-  {
-    u32Address =((MSB - 0xB0)*94 + (LSB -0xA1) + 846)*32 + 0;
+    au8Test1[i] = au8Test[i];
   }
   
-  ReadData(u32Address);
+  
   
   
   if(bPrepare == FALSE)
@@ -222,20 +196,20 @@ static void UserApp1SM_Idle(void)
     bPrepare = TRUE;
     for(i=0;i<16;i++)
     {
-      for(u8Line=0;u8Line<2;u8Line++)
+      for(s8Line=1;s8Line>=0;s8Line--)
       {
-        au8Prepare[i][u8Line]=au8Test6[j];
-        au8Prepare[i][u8Line+2]=au8Test5[j];
-        au8Prepare[i][u8Line+4]=au8Test4[j];
-        au8Prepare[i][u8Line+6]=au8Test3[j];
-        au8Prepare[i][u8Line+8]=au8Test2[j];
-        au8Prepare[i][u8Line+10]=au8Test1[j];
-        au8Prepare[i][u8Line+12]=au8Test0[j];
+        au8Prepare[i][s8Line]=au8Test6[j];
+        au8Prepare[i][s8Line+2]=au8Test5[j];
+        au8Prepare[i][s8Line+4]=au8Test4[j];
+        au8Prepare[i][s8Line+6]=au8Test3[j];
+        au8Prepare[i][s8Line+8]=au8Test2[j];
+        au8Prepare[i][s8Line+10]=au8Test1[j];
+        au8Prepare[i][s8Line+12]=au8Test0[j];
         j++;
       }
-      if(u8Line>=2)
+      if(s8Line<0)
       {
-        u8Line = 0;
+        s8Line = 1;
       }
       if(j>=32)
       {
@@ -246,7 +220,6 @@ static void UserApp1SM_Idle(void)
   
   
   
-  //UserApp1_StateMachine = UserApp1SM_LedData;
 
   
   
@@ -427,23 +400,52 @@ void CD_Data(u8 m)
   }
 }
 
+void Address(u16 w)
+{
+  static u8 MSB;
+  static u8 LSB;
+  static u32 u32Address;
+  
+  MSB = w >> 8;
+  LSB = w & 0x00FF;
+  
+  if(MSB >= 0xA4 && MSB <= 0xA8 && LSB >= 0xA1)
+  {
+    u32Address = 0;
+  }
+  else if(MSB >= 0xA1 && MSB <= 0xA9 && LSB >= 0xA1)
+  {
+    u32Address =((MSB - 0xA1)*94 + (LSB -0xA1))*32 + 0;
+  }
+  else if(MSB >= 0xB0 && MSB <= 0xF7 && LSB >= 0xA1)
+  {
+    u32Address =((MSB - 0xB0)*94 + (LSB -0xA1) + 846)*32 + 0;
+  }
+  
+  ReadData(u32Address);
+}
+
 void ReadData(u32 a)
 {
-  static u8 u8Insturction = 0x03;
-  static u32 u32Address;
+  u8 u8Insturction = 0x03;
+  static u32 u32Address1;
+  static u8 u8Test ;
   u8 i;
+  u8 j;
   
   
+  u32Address1 = a<<8;
   AT91C_BASE_PIOB->PIO_CODR = PB_05_TP56;
   
+  //一个字节的命令字（03h）
   for(i=0;i<8;i++)
   {
     AT91C_BASE_PIOB->PIO_CODR = PB_07_TP60;
-    if((0x10&u8Insturction) == 0)
+    if((0x80&u8Insturction) == 0)
     {
       AT91C_BASE_PIOB->PIO_CODR = PB_08_TP62;
     }
-    else if((0x10&u8Insturction) != 0)
+    else if((0x80&u8Insturction) != 0)
     {
       AT91C_BASE_PIOB->PIO_SODR = PB_08_TP62;
     }
@@ -451,11 +453,49 @@ void ReadData(u32 a)
     AT91C_BASE_PIOB->PIO_SODR = PB_07_TP60;
   }
   
+  //三个字节的地址
   for(i=0;i<24;i++)
   {
-    
+    AT91C_BASE_PIOB->PIO_CODR = PB_07_TP60;
+    if((0x80000000&u32Address1) == 0)
+    {
+      AT91C_BASE_PIOB->PIO_CODR = PB_08_TP62;
+    }
+    else if((0x80000000&u32Address1) != 0)
+    {
+      AT91C_BASE_PIOB->PIO_SODR = PB_08_TP62;
+    }
+    u32Address1 = u32Address1<< 1;
+    AT91C_BASE_PIOB->PIO_SODR = PB_07_TP60;
   }
   
+  for(j=0;j<32;j++)
+  {
+    u8Test = 0;
+    for(i=0;i<8;i++)
+    {
+      AT91C_BASE_PIOB->PIO_SODR = PB_07_TP60;
+      
+      AT91C_BASE_PIOB->PIO_CODR = PB_07_TP60;
+      if( 0 == (AT91C_BASE_PIOB->PIO_PDSR & PB_06_TP58))
+      {
+        u8Test = u8Test;
+      }
+      else if( 0 != (AT91C_BASE_PIOB->PIO_PDSR & PB_06_TP58))
+      {
+        u8Test = u8Test + 0x01;
+      }
+      if(i < 7)
+      {
+        u8Test = u8Test<<1;
+      }
+      
+    }
+
+   au8Test[j]  = u8Test;
+  }
+  
+  AT91C_BASE_PIOB->PIO_SODR = PB_05_TP56;
   
 }
 
@@ -604,7 +644,6 @@ void LedData(u16 i)
       u8Choose++;
       u16Timer = 0;
     }
-    //u8Choose++;
     if(u8Choose>116)  /////
     {
       u8Choose = 1;
